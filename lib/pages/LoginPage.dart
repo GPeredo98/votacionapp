@@ -1,14 +1,15 @@
+import 'dart:io';
 import 'package:app_votos/models/UsuarioModel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:local_auth/auth_strings.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:app_votos/providers/UsuarioProvider.dart';
 import 'package:app_votos/models/ExistModel.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key key}) : super(key: key);
+  //LoginPage({Key key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -23,10 +24,43 @@ class _LoginPageState extends State<LoginPage> {
 
   final usuarioProvider = new UsuarioProvider();
   var existAuth = new Exist();
+  var autenticado = false;
 
   final LocalAuthentication auth = LocalAuthentication();
-  String _authorized = 'Not Authorized';
-  bool _isAuthenticating = false;
+
+  Future<void> _biometrico() async {
+    bool flag = true;
+
+    if (flag) {
+      bool authenticated = false;
+
+      const androidString = const AndroidAuthMessages(
+          cancelButton: "Cancelar",
+          goToSettingsButton: "Ajustes",
+          signInTitle: "Autenticar",
+          fingerprintHint: "Coloque su huella",
+          fingerprintNotRecognized: "Huella no reconocida",
+          fingerprintSuccess: "Huella reconocida",
+          goToSettingsDescription: "Por favor configure su huella");
+
+      try {
+        authenticated = await auth.authenticateWithBiometrics(
+            localizedReason: "Autentiquese para poder emitir su voto",
+            useErrorDialogs: true,
+            stickyAuth: true,
+            androidAuthStrings: androidString);
+
+        if (!authenticated) {
+          exit(0);
+        }
+      } catch (e) {
+        print(e);
+      }
+      if (!mounted) {
+        return;
+      }
+    }
+  }
 
   void dispose() {
     // Limpia el controlador cuando el Widget se descarte
@@ -35,69 +69,59 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _authenticate() async {
-    bool authenticated = false;
-    try {
-      setState(() {
-        _isAuthenticating = true;
-        _authorized = 'Verificando';
-      });
-      authenticated = await auth.authenticateWithBiometrics(
-          localizedReason: 'Pon tu huella para autenticar el ingreso',
-          useErrorDialogs: true,
-          stickyAuth: true);
-      setState(() {
-        _isAuthenticating = false;
-        _authorized = 'Verificando';
-      });
-    } on PlatformException catch (e) {
-      print(e);
-    }
-    if (!mounted) return;
-
-    final String message = authenticated ? 'Autorizado' : 'No autorizado';
-    setState(() {
-      _authorized = message;
-    });
-  }
-
   Exist getExistValue(Exist data) {
     Exist aux = new Exist(respuesta: data.respuesta);
     return aux;
   }
 
-  void _cancelAuthentication() {
-    // auth.stopAuthentication();
-  }
-
-  void verificarUsuarioExist() async {
-    final existAux = await usuarioProvider.verificarUsuario(
-        ciController.text, fechaController.text);
-    // existAuth = existAux;
-    setState(() {});
-  }
-
-  Future funcThatMakesAsyncCall() async {
-    var result = usuarioProvider.verificarUsuario(
-        ciController.text, fechaController.text);
-    print(result);
-    setState(() {
-      var someVal = result;
-    });
-  }
-
-  void _showDialogError() {
-    // flutter defined function
+  void _showDialogErrorUsuario() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // return object of type Dialog
         return AlertDialog(
           title: new Text("Error al ingresar"),
-          content: new Text(
-              "El usuario no se encuentra empadronado"),
+          content: new Text("El usuario no se encuentra empadronado"),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Cerrar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDialogErrorMesa() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Error al ingresar"),
+          content: new Text("La mesa de sufragio ya cerró"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Cerrar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDialogErrorVoto() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Error al ingresar"),
+          content: new Text("Este usuario ya emitio su voto"),
+          actions: <Widget>[
             new FlatButton(
               child: new Text("Cerrar"),
               onPressed: () {
@@ -120,15 +144,15 @@ class _LoginPageState extends State<LoginPage> {
             child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Container(
-                      margin: EdgeInsets.only(top: 40),
                       child: Image(
                         image: AssetImage('assets/logo.png'),
                         width: 260.0,
                       ),
                     ),
-
                     Container(
                       margin: EdgeInsets.only(top: 20, right: 60.0, left: 60.0),
                       child: TextFormField(
@@ -138,10 +162,10 @@ class _LoginPageState extends State<LoginPage> {
                           if (value.isEmpty) {
                             return 'Please enter some text';
                           }
+                          return null;
                         },
                       ),
                     ),
-
                     Container(
                       margin: EdgeInsets.only(right: 60.0, left: 60.0),
                       child: DateTimeField(
@@ -158,33 +182,52 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                     ),
-                    //Text('Estado: $_authorized\n'),
-                    Container(
-                      margin: EdgeInsets.only(top: 40),
-                      child: RaisedButton(
-                        child: Text(_isAuthenticating
-                            ? 'Verificar'
-                            : 'Verificar Huella'),
-                        onPressed: _isAuthenticating
-                            ? _cancelAuthentication
-                            : _authenticate,
-                      ),
-                    ),
                     Align(
                       alignment: Alignment.bottomCenter,
-                      child: RaisedButton(
-                        child: Text('INGRESAR'),
-                        onPressed: () async {
+                      child: Container(
+                        margin: EdgeInsets.only(top: 40.0),
+                        child: RaisedButton(
+                          child: Text('INGRESAR'),
+                          onPressed: () async {
+                            setState(() {
+                              _biometrico();
+                            });
+                            print('CI: ' + ciController.text);
+                            print('Fecha: ' + fechaController.text);
+                            Usuario objUser =
+                                await usuarioProvider.verificarUsuario(
+                                    ciController.text, fechaController.text);
 
-                          Usuario objUser = await usuarioProvider.verificarUsuario(ciController.text, fechaController.text);
-                          if(objUser.ci == "error") {
-                            _showDialogError();
-                            print("error no existe ese ci o fecha");
-                          } else {
-                            print(objUser.ci);
-                            Navigator.pushNamed(context, '/validate', arguments: objUser);
-                          }
-                        },
+                            //Validar si los datos existen
+                            if (objUser.ci == "error") {
+                              _showDialogErrorUsuario();
+                              print("error no existe ese ci o fecha");
+                            } else {
+                              print('INGRESO');
+                              bool mesaStats = await usuarioProvider
+                                  .verificarMesa(objUser.mesaId);
+
+                              //Validar si la mesa esta cerrada
+                              if (mesaStats) {
+                                _showDialogErrorMesa();
+                                print("La mesa ya esta cerrada");
+                              } else {
+                                bool votoStats = await usuarioProvider
+                                    .verificarVoto(objUser.usuarioId);
+
+                                //Validar si el usuario ya emitió su voto
+                                if (votoStats) {
+                                  _showDialogErrorVoto();
+                                  print("Este usuario ya ejecuto su voto");
+                                } else {
+                                  Navigator.pushNamed(context, '/validate',
+                                      arguments: objUser);
+                                }
+                                //Navigator.pushNamed(context, '/validate', arguments: objUser);
+                              }
+                            }
+                          },
+                        ),
                       ),
                     )
                   ],

@@ -8,6 +8,12 @@ List<Candidato> candidatoFromJson(String str) => List<Candidato>.from(json.decod
 
 String candidatoToJson(List<Candidato> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
+
+Candidato candidatodFromJson(String str) => Candidato.fromJson(json.decode(str));
+
+String candidatodToJson(Candidato data) => json.encode(data.toJson());
+
+
 class Partido {
     int partidoId;
     String sigla;

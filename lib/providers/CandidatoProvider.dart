@@ -1,10 +1,9 @@
 import 'dart:core';
-import 'dart:core';
 import 'package:app_votos/models/CandidatoModel.dart';
 import 'package:http/http.dart' as http;
 
 class CandidatoProvider {
-  String _url = '192.168.137.125';
+  String _url = '192.168.43.86';
   
   Future<List<Candidato>> getCandidatosPresidentes() async {
     final url = Uri.http(_url, 'Elecciones/api/candidatos/presidente');

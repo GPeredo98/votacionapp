@@ -1,8 +1,20 @@
+import 'package:app_votos/models/CodigoRandomModel.dart';
 import 'package:app_votos/models/UsuarioModel.dart';
 import 'package:flutter/material.dart';
+import 'package:app_votos/providers/UsuarioProvider.dart';
+import 'package:app_votos/providers/CodigoProvider.dart';
 
-class ValidatePage extends StatelessWidget {
+class ValidatePage extends StatefulWidget {
   const ValidatePage({Key key}) : super(key: key);
+
+  @override
+  _ValidatePageState createState() => _ValidatePageState();
+}
+
+class _ValidatePageState extends State<ValidatePage> {
+  UsuarioProvider usuarioProvider = new UsuarioProvider();
+  GeneradorProvider codigoProvider = new GeneradorProvider();
+  String _codigo = "1324";
 
   @override
   Widget build(BuildContext context) {
@@ -10,31 +22,53 @@ class ValidatePage extends StatelessWidget {
     usr = ModalRoute.of(context).settings.arguments;
 
     return Container(
-      child: Scaffold (
-        body: Padding(
-          padding: const EdgeInsets.only(right: 30.0, left: 30.0, top: 80),
-          child: Column(
-            children: <Widget>[
-              
-              Text('Ingrese el código de seguridad'),
-              TextField(
-                decoration: InputDecoration(
-                  helperText: 'Es el número proporcionado por la app generadora de códigos',
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Padding(
+            padding: const EdgeInsets.only(right: 30.0, left: 30.0, top: 80),
+            child: Column(
+              children: <Widget>[
+                // Container(
+                //     width: 300.0,
+                //     child: FutureBuilder<CodigoRandom> (
+                //       future: codigoProvider.getCode(),
+                //       builder: (context, snapshot) {
+                //         if (snapshot.hasError) {
+                //           print(snapshot.error);
+                //           return Center(child: Text('Error al cargar datos'));
+                //         }
+                //         if (!snapshot.hasData) {
+                //           setState(() {
+                //             _codigo = snapshot.data.code;
+                //           });
+                //         }
+                //       },
+                //     )),
+                Text('Ingrese el código de seguridad'),
+                TextField(
+                  decoration: InputDecoration(
+                    helperText:
+                        'Es el número proporcionado por el campo generador de códigos',
                   ),
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 20),
-                child: RaisedButton(
-                  child: Text('VERIFICAR'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/ballot');
-                  },
                 ),
-              )
-            ],
-          ),
-        )
-      ),
+                Container(
+                  margin: EdgeInsets.only(top: 20),
+                  child: RaisedButton(
+                    child: Text('VERIFICAR'),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/ballot', arguments: usr);
+                    },
+                  ),
+                ),
+                Container(
+                    margin: EdgeInsets.only(top: 40),
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 3.0),
+                    ),
+                    child: Center(child: Text('1324'))),
+              ],
+            ),
+          )),
     );
   }
 }
