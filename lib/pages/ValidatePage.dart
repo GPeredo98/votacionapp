@@ -14,7 +14,27 @@ class ValidatePage extends StatefulWidget {
 class _ValidatePageState extends State<ValidatePage> {
   UsuarioProvider usuarioProvider = new UsuarioProvider();
   GeneradorProvider codigoProvider = new GeneradorProvider();
-  String _codigo = "1324";
+  final codigoController = TextEditingController();
+
+  void _showDialogErrorCodigo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Error al ingresar"),
+          content: new Text("El código de seguridad es incorrecto"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Cerrar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,24 +48,31 @@ class _ValidatePageState extends State<ValidatePage> {
             padding: const EdgeInsets.only(right: 30.0, left: 30.0, top: 80),
             child: Column(
               children: <Widget>[
-                // Container(
-                //     width: 300.0,
-                //     child: FutureBuilder<CodigoRandom> (
-                //       future: codigoProvider.getCode(),
-                //       builder: (context, snapshot) {
-                //         if (snapshot.hasError) {
-                //           print(snapshot.error);
-                //           return Center(child: Text('Error al cargar datos'));
-                //         }
-                //         if (!snapshot.hasData) {
-                //           setState(() {
-                //             _codigo = snapshot.data.code;
-                //           });
-                //         }
-                //       },
-                //     )),
+                Text('Codigo de seguridad'),
+                Container(
+                    width: 300.0,
+                    child: FutureBuilder<CodigoRandom>(
+                      future: codigoProvider.getCode(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          if (snapshot.hasError) {
+                            print(snapshot.error);
+                            return Center(child: Text('Error al cargar datos'));
+                          }
+                          return Container(
+                              margin: EdgeInsets.only(top: 5, bottom: 40),
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 3.0),
+                              ),
+                              child: Center(child: Text(snapshot.data.code)));
+                        } else {
+                          return CircularProgressIndicator();
+                        }
+                      },
+                    )),
                 Text('Ingrese el código de seguridad'),
                 TextField(
+                  controller: codigoController,
                   decoration: InputDecoration(
                     helperText:
                         'Es el número proporcionado por el campo generador de códigos',
@@ -55,17 +82,17 @@ class _ValidatePageState extends State<ValidatePage> {
                   margin: EdgeInsets.only(top: 20),
                   child: RaisedButton(
                     child: Text('VERIFICAR'),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/ballot', arguments: usr);
+                    onPressed: () async {
+                      var res = await codigoProvider.postCode(codigoController.text);
+                      print('RES: '+ res);
+                      if(res == 'success') {
+                        Navigator.pushNamed(context, '/ballot', arguments: usr);
+                      } else {
+                        _showDialogErrorCodigo();
+                      }
                     },
                   ),
                 ),
-                Container(
-                    margin: EdgeInsets.only(top: 40),
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 3.0),
-                    ),
-                    child: Center(child: Text('1324'))),
               ],
             ),
           )),

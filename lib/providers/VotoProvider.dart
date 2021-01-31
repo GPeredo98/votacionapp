@@ -1,9 +1,10 @@
 import 'dart:core';
 import 'package:app_votos/models/CandidatoModel.dart';
 import 'package:http/http.dart' as http;
+import 'package:app_votos/main.dart' as main;
 
 class VotoProvider {
-  final String _url = 'http://192.168.43.86';
+  final String _url = 'http://'+main.ip;
 
   Future<bool> votarPresidente(int candidatoID, int usuarioID) async {
     final url = '$_url/Elecciones/api/votos';

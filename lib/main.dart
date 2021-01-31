@@ -4,6 +4,7 @@ import 'package:app_votos/pages/LoginPage.dart';
 import 'package:app_votos/pages/ValidatePage.dart';
 import 'package:flutter/services.dart';
 
+final ip = '192.168.0.15';
 
 void main() => runApp(MyApp());
 

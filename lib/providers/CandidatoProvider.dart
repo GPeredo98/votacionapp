@@ -1,12 +1,13 @@
 import 'dart:core';
 import 'package:app_votos/models/CandidatoModel.dart';
 import 'package:http/http.dart' as http;
+import 'package:app_votos/main.dart' as main;
 
 class CandidatoProvider {
-  String _url = '192.168.43.86';
+  String _url = main.ip;
   
   Future<List<Candidato>> getCandidatosPresidentes() async {
-    final url = Uri.http(_url, 'Elecciones/api/candidatos/presidente');
+    final url = Uri.http(_url, 'Elecciones/api/candidatos/list/presidente');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -18,7 +19,7 @@ class CandidatoProvider {
 
   }
   Future<List<Candidato>> getCandidatosDiputados() async {
-    final url = Uri.http(_url, 'Elecciones/api/candidatos/diputado');
+    final url = Uri.http(_url, 'Elecciones/api/candidatos/list/diputado');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

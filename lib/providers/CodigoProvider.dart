@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:app_votos/models/CodigoRandomModel.dart';
 import 'package:app_votos/models/Validador.dart';
@@ -13,11 +11,8 @@ class GeneradorProvider {
   } 
 
   Future <CodigoRandom> _procesar (Uri url) async {
-    print('URI: '+url.toString());
     final resp = await http.get(url);
-    print('Resp: '+resp.toString());
     final decodedData = codigoRandomFromJson(resp.body);
-    print('DecodeData: '+decodedData.code);
     return decodedData;
   }
 

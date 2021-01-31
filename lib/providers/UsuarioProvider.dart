@@ -3,10 +3,11 @@ import 'package:app_votos/models/VotosModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_votos/models/UsuarioModel.dart';
 import 'package:app_votos/models/MesaModel.dart';
+import 'package:app_votos/main.dart' as main;
 
 class UsuarioProvider {
 
-  String _url = '192.168.43.86';
+  String _url = main.ip;
   
   Future<Usuario> getUsuario(String usuarioId) async {
     final url = Uri.http(_url, 'Elecciones/api/jurados/$usuarioId');
